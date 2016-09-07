@@ -59,10 +59,7 @@ function Graph() {
             if (source === undefined) throw "source node doesn't exists";
             else if (target === undefined) throw "target node doesn't exists";
             
-            let index = links.findIndex(function (link) {
-                return link.source === source && link.target === target;
-            });
-            
+            let index = links.findIndex(link => link.source === source && link.target === target);
             if (index !== -1) throw "link already existing between those two nodes : " + source.id + " > " + target.id;
             
             let link = new Link(source, target, cost);
@@ -80,11 +77,9 @@ function Graph() {
             let source = getCorrespondingNode(idSourceNode);
             let target = getCorrespondingNode(idTargetNode);
             
-            let link = links.find(function (l) {
-                return l.source == source && l.target == target;
-            });
-    
+            let link = links.find(link => link.source == source && link.target == target);
             if (link === undefined) throw "no links between the two given nodes : " + source.id + " > " + target.id;
+            
             return link;
         },
         

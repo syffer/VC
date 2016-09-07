@@ -1,3 +1,15 @@
+/* side bar */
+#sidebar {
+    position: fixed;
+    float: left;
+}
+
+#sidebar * {
+    display: block;
+    margin: auto;
+}
+
+/* graph */
 svg {
     background-color: #FFF;
     cursor: default;
