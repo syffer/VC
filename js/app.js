@@ -32,7 +32,7 @@ function Mediator() {
         trigger: function (event, sender, ...options) { 
             if (!handlers[event]) return;   // if no listeners on this event ever
                         
-            handlers[event].forEach(function (handler, index) {
+            handlers[event].forEach(function (handler, index) { 
                 handler.callback.call(handler.listener, sender, options);
             });
         },
@@ -65,9 +65,9 @@ function Model() {
             return graph.links;
         },
         
-        reinisializeGraph: function () {
+        reinisializeGraph: function () { 
             graph = createRandomGraph();
-            controller.trigger(Events.GRAPH_UPDATED, self);
+            controller.trigger(Events.GRAPH_UPDATED, this);
         }, 
         
         setController: function (newController) {
@@ -247,7 +247,8 @@ function View(controller, model) {
         },
         
         redrawGraph: function () {
-            
+            initializeForce();
+            updateGraphView();
         },
     };
     
