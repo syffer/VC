@@ -1,26 +1,60 @@
 "use strict";
 
 
-function Event(sender) { 
-    let callbacks = [];
+let Events = Object.freeze({
+    INITIALIZE_GRAPH: "EVENT:INITIALIZE_GRAPH", 
+    GRAPH_UPDATED: "EVENT:GRAPH_UPDATED", 
+});
+
+
+function Mediator() {
+    let handlers = {};
     
     return {
-        attach: function (callback) {
-            callbacks.push(callback);
+        on: function (event, listener, callback) { 
+            let handler = {
+                listener: listener,
+                callback: callback,
+            };
+            
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);            
+        }, 
+        
+        off: function (event, listener, callback) {
+            if (!handlers[event]) return;
+            
+            handlers[event].filter(function (handler, index) {
+                return handler.listener === listener && handler.callback === callback; 
+            });
+        }, 
+        
+        trigger: function (event, sender, ...options) { 
+            if (!handlers[event]) return;   // if no listeners on this event ever
+                        
+            handlers[event].forEach(function (handler, index) {
+                handler.callback.call(handler.listener, sender, options);
+            });
         },
-        notify: function (args) {
-            callbacks.forEach(callback => callback(sender, args));
-        }
+        
+        reset: function () {
+            handlers = {};
+        },
     }
 }
 
 
 
+
+
 function Model() {
+    let controller; 
+    let self; 
+    
     let graph = createRandomGraph();
     // al 
     
-    return {
+    self = {
         graph: graph, 
         
         getGraphNodes: function () {
@@ -33,13 +67,22 @@ function Model() {
         
         reinisializeGraph: function () {
             graph = createRandomGraph();
+            controller.trigger(Events.GRAPH_UPDATED, self);
         }, 
         
+        setController: function (newController) {
+            controller = newController;
+        },
     };
+    
+    return self;
 }
 
 
-function View(controller, model) {
+
+
+function View(controller, model) { 
+    let self; 
     
     let force;  // d3.js graph  
     
@@ -53,6 +96,10 @@ function View(controller, model) {
     });
     
     initSvgMarkers();
+    
+    let buttonNewGraph = document.getElementById("buttonNewGraph");
+    buttonNewGraph.onclick = onNewGraphButtonEvent;
+    
     
     function initSvgMarkers() {
         // arrow markers for graph links 
@@ -187,26 +234,56 @@ function View(controller, model) {
         circle.exit().remove();
     }
     
-    return {
-        newGraphButtonEvent: new Event(this),
-        
-        show: function() { 
+    
+    function onNewGraphButtonEvent() {
+        console.log("[View] on new graph button event"); 
+        controller.trigger(Events.INITIALIZE_GRAPH, self);
+    }
+    
+    self = {         
+        show: function () { 
             initializeForce(); 
             updateGraphView();
         },
+        
+        redrawGraph: function () {
+            
+        },
     };
+    
+    return self;
 }
 
 
+
+
 function Controller(model) { 
-    let view = new View(this, model);
+    let mediator = new Mediator();
     
-    view.show();
+    function inisialize() {
+        model.setController(self);
+        
+        // create the view
+        self.view = new View(self, model);
+        self.view.show();
+                
+        // add the events
+        mediator.on(Events.INITIALIZE_GRAPH, model, model.reinisializeGraph);
+        mediator.on(Events.GRAPH_UPDATED, self.view, self.view.redrawGraph);
+    }
     
-    return {
+    let self = {
         model: model,
-        view: view, 
+        view: undefined, 
+        
+        mediator: mediator, 
+        on: mediator.on, 
+        off: mediator.off, 
+        trigger: mediator.trigger, 
     };
+    
+    inisialize();
+    return self;
 }
 
 
