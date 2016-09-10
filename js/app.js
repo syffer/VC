@@ -7,10 +7,18 @@ let Events = Object.freeze({
 });
 
 
+
 function Mediator() {
     let handlers = {};
     
     return {
+        
+        /**
+         * Adds a callback to be executed when the given event is triggered
+         * @param {string}   event    the event to be listened
+         * @param {object}   listener the object that listens to the event
+         * @param {function} callback the function to be called when the event is triggered
+         */
         on: function (event, listener, callback) { 
             let handler = {
                 listener: listener,
@@ -21,6 +29,12 @@ function Mediator() {
             handlers[event].push(handler);            
         }, 
         
+        /**
+         * Removes a callback from the given event
+         * @param   {string}   event    the event where the callback was assigned to
+         * @param   {object}   listener the object that listened to the event
+         * @param   {function} callback the function to be removed
+         */
         off: function (event, listener, callback) {
             if (!handlers[event]) return;
             
@@ -29,6 +43,12 @@ function Mediator() {
             });
         }, 
         
+        /**
+         * Triggers an event, and calls each callbacks of that event
+         * @param {string} event      the event to trigger  
+         * @param {object} sender     the object that triggers the event
+         * @param {Array}  ...options some options that will be passed as arguments to the callbacks 
+         */
         trigger: function (event, sender, ...options) { 
             if (!handlers[event]) return;   // if no listeners on this event ever
                         
@@ -37,6 +57,9 @@ function Mediator() {
             });
         },
         
+        /**
+         * Resets the mediator
+         */
         reset: function () {
             handlers = {};
         },
@@ -48,8 +71,8 @@ function Mediator() {
 
 
 function Model() {
-    let controller; 
     let self; 
+    let controller; 
     
     let graph = createRandomGraph();
     // al 
@@ -84,24 +107,46 @@ function Model() {
 function View(controller, model) { 
     let self; 
     
+    let svg; 
     let force;  // d3.js graph  
+    
+    // handles to link and node element groups 
+    let path;     
+    let circle; 
+    let weight;
     
     let width = 1260;
     let height = 700;
     
-    // creates the svg tag 
-    let svg = d3.select("body").append("svg").attr({
-        width: width, 
-        height: height,
-    });
+    /**
+     * Initializes the view by 
+     * - creating the SVG tag 
+     * - adding the html events 
+     */
+    function initialize() {
+        initializeSVG();
+        
+        // handles to link and node element groups  
+        path = svg.append("svg:g").selectAll("path");
+        circle = svg.append("svg:g").selectAll("g");
+        weight = svg.append("svg:g").selectAll("text");
+        
+        // links to html events 
+        let buttonNewGraph = document.getElementById("buttonNewGraph");
+        buttonNewGraph.onclick = onNewGraphButtonEvent;
+        
+    }
     
-    initSvgMarkers();
-    
-    let buttonNewGraph = document.getElementById("buttonNewGraph");
-    buttonNewGraph.onclick = onNewGraphButtonEvent;
-    
-    
-    function initSvgMarkers() {
+    /**
+     * Initializes the SVG tag 
+     */
+    function initializeSVG() {
+        // creates the svg tag 
+        svg = d3.select("body").append("svg").attr({
+            width: width, 
+            height: height,
+        });
+        
         // arrow markers for graph links 
         let svgDefs = svg.append("svg:defs");
 
@@ -121,12 +166,10 @@ function View(controller, model) {
     }
     
     
-    // handles to link and node element groups 
-    let path = svg.append("svg:g").selectAll("path");
-    let circle = svg.append("svg:g").selectAll("g");
-    let weight = svg.append("svg:g").selectAll("text");
     
-    
+    /**
+     * Initializes the d3.js force, the graph
+     */
     function initializeForce() {
         force = d3.layout.force()
             .nodes(model.getGraphNodes())
@@ -138,6 +181,11 @@ function View(controller, model) {
     }
     
 
+    /**
+     * Draws the graph elements at a calculated position. 
+     * Called periodically. 
+     * @see Model.initializeForce()
+     */
     function tick() {
         path.attr({
             d: function (link) { 
@@ -235,8 +283,7 @@ function View(controller, model) {
     }
     
     
-    function onNewGraphButtonEvent() {
-        console.log("[View] on new graph button event"); 
+    function onNewGraphButtonEvent() { 
         controller.trigger(Events.INITIALIZE_GRAPH, self);
     }
     
@@ -252,6 +299,8 @@ function View(controller, model) {
         },
     };
     
+    
+    initialize();
     return self;
 }
 
@@ -261,7 +310,7 @@ function View(controller, model) {
 function Controller(model) { 
     let mediator = new Mediator();
     
-    function inisialize() {
+    function initialize() {
         model.setController(self);
         
         // create the view
@@ -283,7 +332,7 @@ function Controller(model) {
         trigger: mediator.trigger, 
     };
     
-    inisialize();
+    initialize();
     return self;
 }
 
