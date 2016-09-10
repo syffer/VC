@@ -5,20 +5,24 @@
         <meta charset="UTF-8">
         <meta name="author" content="Maxime PINEAU">
         <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-slider.min.css">
         <link rel="stylesheet" href="css/index.css">
     </head>
     
     <body>
         
         <div id="sidebar">
+            <input id="sliderNbNodes" data-slider-id='ex1Slider' type="text" data-slider-min="2" data-slider-max="30" data-slider-step="1" data-slider-value="20"/>
+            <input id="sliderNbInputLinks" data-slider-id='ex2Slider' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="2"/>
+            <input id="sliderNbOutputLinks" data-slider-id='ex3Slider' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="2"/>
             <button type="button" id="buttonNewGraph" class="btn btn-default">New Graph</button>
-            
         </div>
         
         
         
-        
+        <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
         <script type="text/javascript" src="js/d3.v3.min.js"></script>
+        
         <script type="text/javascript" src="js/graph.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
     </body>

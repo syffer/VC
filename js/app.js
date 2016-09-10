@@ -53,7 +53,7 @@ function Mediator() {
             if (!handlers[event]) return;   // if no listeners on this event ever
                         
             handlers[event].forEach(function (handler, index) { 
-                handler.callback.call(handler.listener, sender, options);
+                handler.callback.call(handler.listener, sender, ...options);
             });
         },
         
@@ -88,10 +88,10 @@ function Model() {
             return graph.links;
         },
         
-        reinisializeGraph: function () { 
-            graph = createRandomGraph();
+        onInitializeGraphEvent: function (sender, nbNodes, nbInputLinks, nbOutputLinks) { 
+            graph = createRandomGraph(nbNodes, nbInputLinks, nbOutputLinks);
             controller.trigger(Events.GRAPH_UPDATED, this);
-        }, 
+        },
         
         setController: function (newController) {
             controller = newController;
@@ -118,6 +118,11 @@ function View(controller, model) {
     let width = 1260;
     let height = 700;
     
+    let buttonNewGraph;
+    let sliderNbNodes;
+    let sliderNbInputLinks;
+    let sliderNbOutputLinks;
+    
     /**
      * Initializes the view by 
      * - creating the SVG tag 
@@ -132,9 +137,21 @@ function View(controller, model) {
         weight = svg.append("svg:g").selectAll("text");
         
         // links to html events 
-        let buttonNewGraph = document.getElementById("buttonNewGraph");
+        buttonNewGraph = document.getElementById("buttonNewGraph");
         buttonNewGraph.onclick = onNewGraphButtonEvent;
         
+        // creates the sliders 
+        sliderNbNodes = new Slider("#sliderNbNodes", {
+            
+        });
+        
+        sliderNbInputLinks = new Slider("#sliderNbInputLinks", {
+            
+        });
+        
+        sliderNbOutputLinks = new Slider("#sliderNbOutputLinks", {
+            
+        });
     }
     
     /**
@@ -284,7 +301,11 @@ function View(controller, model) {
     
     
     function onNewGraphButtonEvent() { 
-        controller.trigger(Events.INITIALIZE_GRAPH, self);
+        let nbNodes = sliderNbNodes.getValue();
+        let nbInputLinks = sliderNbInputLinks.getValue();
+        let nbOutputLinks = sliderNbOutputLinks.getValue();
+        
+        controller.trigger(Events.INITIALIZE_GRAPH, self, nbNodes, nbInputLinks, nbOutputLinks);
     }
     
     self = {         
@@ -318,7 +339,7 @@ function Controller(model) {
         self.view.show();
                 
         // add the events
-        mediator.on(Events.INITIALIZE_GRAPH, model, model.reinisializeGraph);
+        mediator.on(Events.INITIALIZE_GRAPH, model, model.onInitializeGraphEvent);
         mediator.on(Events.GRAPH_UPDATED, self.view, self.view.redrawGraph);
     }
     
