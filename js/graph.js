@@ -23,6 +23,8 @@ function Node(id) {
 }
 
 function Link(source, target, cost = 1) { 
+    if (source.id > target.id) [source, target] = [target, source];
+    
     this.source = source;
     this.target = target; 
     this.cost = cost; 
@@ -59,6 +61,7 @@ function Graph() {
             if (source === undefined) throw "source node doesn't exists";
             else if (target === undefined) throw "target node doesn't exists";
             
+            if (source.id > target.id) [source, target] = [target, source];
             let index = links.findIndex(link => link.source === source && link.target === target);
             if (index !== -1) throw "link already existing between those two nodes : " + source.id + " > " + target.id;
             
@@ -76,6 +79,8 @@ function Graph() {
         getLink: function (idSourceNode, idTargetNode) {
             let source = getCorrespondingNode(idSourceNode);
             let target = getCorrespondingNode(idTargetNode);
+            
+            if (source.id > target.id) [source, target] = [target, source];
             
             let link = links.find(link => link.source == source && link.target == target);
             if (link === undefined) throw "no links between the two given nodes : " + source.id + " > " + target.id;
@@ -96,7 +101,7 @@ function Graph() {
 }
 
 
-function createRandomGraph(nbNodes = 10, nbInputLinksPerNode = 2, nbOutputLinksPerNode = 2, minCost = 1, maxCost = 30) {
+function createRandomGraph(nbNodes = 10, nbLinksPerNode = 2, minCost = 1, maxCost = 30) {
     
     function getOtherId(id, nodesId) {
         let otherIndex = -1; 
@@ -120,12 +125,11 @@ function createRandomGraph(nbNodes = 10, nbInputLinksPerNode = 2, nbOutputLinksP
     Array.apply(null, Array(nbNodes)).forEach(function (elem, index, table) {
         graph.addNode(index);
     });
-        
-    // creates the links (input and output)
+    
+    // creates the links 
     Object.keys(graph.nodes).forEach(function (id, index, nodesId) { 
         
-        // inut links 
-        for(let i = 0; i < nbInputLinksPerNode; i++) { 
+        for(let i = 0; i < nbLinksPerNode; i++) { 
             let otherId = getOtherId(id, nodesId);
             let cost = random(minCost, maxCost);
             
@@ -137,18 +141,6 @@ function createRandomGraph(nbNodes = 10, nbInputLinksPerNode = 2, nbOutputLinksP
             }
         }
         
-        // output links 
-        for(let i = 0; i < nbOutputLinksPerNode; i++) {
-            let otherId = getOtherId(id, nodesId);
-            let cost = random(minCost, maxCost);
-            
-            try {
-                graph.addLink(otherId, id, cost);
-            }
-            catch (e) {
-                
-            }
-        }        
     });
         
     return graph;

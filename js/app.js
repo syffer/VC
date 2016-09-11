@@ -120,8 +120,7 @@ function View(controller, model) {
     
     let buttonNewGraph;
     let sliderNbNodes;
-    let sliderNbInputLinks;
-    let sliderNbOutputLinks;
+    let sliderNbLinks;
     
     /**
      * Initializes the view by 
@@ -141,17 +140,8 @@ function View(controller, model) {
         buttonNewGraph.onclick = onNewGraphButtonEvent;
         
         // creates the sliders 
-        sliderNbNodes = new Slider("#sliderNbNodes", {
-            
-        });
-        
-        sliderNbInputLinks = new Slider("#sliderNbInputLinks", {
-            
-        });
-        
-        sliderNbOutputLinks = new Slider("#sliderNbOutputLinks", {
-            
-        });
+        sliderNbNodes = new Slider("#sliderNbNodes", {}); 
+        sliderNbLinks = new Slider("#sliderNbLinks", {});
     }
     
     /**
@@ -258,7 +248,7 @@ function View(controller, model) {
         path.enter().append("svg:path")
             .attr("class", "link")
             .style("marker-start", "")
-            .style("marker-end", "url(#end-arrow)");
+            .style("marker-end", "");   // url(#end-arrow)
         
         path.exit().remove();
     }
@@ -302,10 +292,9 @@ function View(controller, model) {
     
     function onNewGraphButtonEvent() { 
         let nbNodes = sliderNbNodes.getValue();
-        let nbInputLinks = sliderNbInputLinks.getValue();
-        let nbOutputLinks = sliderNbOutputLinks.getValue();
+        let nbLinks = sliderNbLinks.getValue();
         
-        controller.trigger(Events.INITIALIZE_GRAPH, self, nbNodes, nbInputLinks, nbOutputLinks);
+        controller.trigger(Events.INITIALIZE_GRAPH, self, nbNodes, nbLinks);
     }
     
     self = {         

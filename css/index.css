@@ -44,3 +44,9 @@ text {
     font-weight: bold;
     /*pointer-events: none;*/
 }
+
+
+/* */
+.selected {
+    fill: #ff7400,
+}
