@@ -92,8 +92,22 @@ function Graph() {
             return Object.keys(nodes).length;
         }, 
         
-        getNbLinks: function() {
+        getNbLinks: function () {
             return links.length;
+        }, 
+        
+        getNeighborhood: function () {
+            let neighbors = {};
+            
+            links.forEach(function (link) {
+                neighbors[link.source.id] = neighbors[link.source.id] || [];
+                neighbors[link.target.id] = neighbors[link.target.id] || [];
+
+                neighbors[link.source.id].push(link.target.id);
+                neighbors[link.target.id].push(link.source.id);
+            });
+            
+            return neighbors;
         }
     };
     
@@ -101,7 +115,7 @@ function Graph() {
 }
 
 
-function createRandomGraph(nbNodes = 10, nbLinksPerNode = 2, minCost = 1, maxCost = 30) {
+function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCost = 30) {
     
     function getOtherId(id, nodesId) {
         let otherIndex = -1; 
@@ -145,4 +159,43 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 2, minCost = 1, maxCos
         
     return graph;
 }
+
+
+
+
+function getCycle(graph, startingNode) {
+        
+    function rec(neighborhood, actual, cycle, cycleLength) {        
+        let possibilities = neighborhood[actual];
+        neighborhood[actual] = undefined;
+        
+        let res = possibilities.some(function (possibility) { 
+            
+            if (cycleLength === graph.getNbNodes()-1 && possibility === startingNode) {
+                cycle.push(possibility);
+                return true;
+            } else if (neighborhood[possibility] !== undefined && rec(neighborhood, possibility, cycle, cycleLength+1)) {
+                cycle.push(possibility);
+                return true;
+            }
+                   
+            return false;
+        });
+                
+        if (!res) neighborhood[actual] = possibilities;
+        return res;
+    }
+    
+    
+    
+    let neighborhood = graph.getNeighborhood();
+    let cycle = [];
+    rec(neighborhood, startingNode, cycle, 0);    
+    
+    if (cycle.length <= 0) throw "the given graph doesn't possess any hamiltonian cycle";
+    
+    return cycle;
+}
+
+
 

@@ -74,22 +74,21 @@ function Model() {
     let self; 
     let controller; 
     
-    let graph = createRandomGraph();
     // al 
     
     self = {
-        graph: graph, 
+        graph: createRandomGraph(), 
         
         getGraphNodes: function () {
-            return d3.values(graph.nodes);
+            return d3.values(this.graph.nodes);
         }, 
         
         getGraphLinks: function () {
-            return graph.links;
+            return this.graph.links;
         },
         
         onInitializeGraphEvent: function (sender, nbNodes, nbInputLinks, nbOutputLinks) { 
-            graph = createRandomGraph(nbNodes, nbInputLinks, nbOutputLinks);
+            this.graph = createRandomGraph(nbNodes, nbInputLinks, nbOutputLinks);
             controller.trigger(Events.GRAPH_UPDATED, this);
         },
         
@@ -351,4 +350,4 @@ let model = new Model();
 let controller = new Controller(model);
 
 
-
+let g = model.graph;
