@@ -45,7 +45,7 @@ function Graph() {
         links: links, 
         
         addNode: function (id) {
-            if (nodes[id] !== undefined) throw "an existing node with that id already exists";
+            if (nodes[id] !== undefined) throw new Error("an existing node with that id already exists");
             
             let node = new Node(id);
             nodes[id] = node;
@@ -58,12 +58,12 @@ function Graph() {
             let source = getCorrespondingNode(sourceNode);
             let target = getCorrespondingNode(targetNode);
             
-            if (source === undefined) throw "source node doesn't exists";
-            else if (target === undefined) throw "target node doesn't exists";
+            if (source === undefined) throw new Error("source node doesn't exists");
+            else if (target === undefined) throw new Error("target node doesn't exists");
             
             if (source.id > target.id) [source, target] = [target, source];
             let index = links.findIndex(link => link.source === source && link.target === target);
-            if (index !== -1) throw "link already existing between those two nodes : " + source.id + " > " + target.id;
+            if (index !== -1) throw new Error("link already existing between those two nodes : " + source.id + " > " + target.id);
             
             let link = new Link(source, target, cost);
             links.push(link);
@@ -72,7 +72,7 @@ function Graph() {
         }, 
         
         getNode: function (idNode) { 
-            if (nodes[idNode] === undefined) throw "no node with that id exists : " + idNode; 
+            if (nodes[idNode] === undefined) throw new Error("no node with that id exists : " + idNode); 
             return nodes[idNode];
         },
         
@@ -83,7 +83,7 @@ function Graph() {
             if (source.id > target.id) [source, target] = [target, source];
             
             let link = links.find(link => link.source == source && link.target == target);
-            if (link === undefined) throw "no links between the two given nodes : " + source.id + " > " + target.id;
+            if (link === undefined) throw new Error("no links between the two given nodes : " + source.id + " > " + target.id);
             
             return link;
         },
@@ -116,9 +116,9 @@ function Graph() {
 
 
 function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCost = 30) {
-    if (nbNodes < 0) throw "nbNodes must be greater than 0";
+    if (nbNodes < 0) throw new Error("nbNodes must be greater than 0");
     if (nbNodes === 1 && nbLinksPerNode > 0) nbLinksPerNode = 0;
-    if (minCost > maxCost) throw "minimal cost must be inferior to maximal cost";
+    if (minCost > maxCost) throw new Error("minimal cost must be inferior to maximal cost");
     
     function getOtherId(id, nodesId) {
         let otherIndex = -1; 
@@ -194,7 +194,7 @@ function getRandomCycle(graph, startingNode) {
     let cycle = [];
     let hasCycle = rec(neighborhood, startingNode, cycle, 0);    
     
-    if (!hasCycle) throw "the given graph doesn't possess any hamiltonian cycle";
+    if (!hasCycle) throw new Error("the given graph doesn't possess any hamiltonian cycle");
     
     return cycle;
 }
