@@ -8,65 +8,6 @@ let Events = Object.freeze({
 
 
 
-function Mediator() {
-    let handlers = {};
-    
-    return {
-        
-        /**
-         * Adds a callback to be executed when the given event is triggered
-         * @param {string}   event    the event to be listened
-         * @param {object}   listener the object that listens to the event
-         * @param {function} callback the function to be called when the event is triggered
-         */
-        on: function (event, listener, callback) { 
-            let handler = {
-                listener: listener,
-                callback: callback,
-            };
-            
-            handlers[event] = handlers[event] || [];
-            handlers[event].push(handler);            
-        }, 
-        
-        /**
-         * Removes a callback from the given event
-         * @param   {string}   event    the event where the callback was assigned to
-         * @param   {object}   listener the object that listened to the event
-         * @param   {function} callback the function to be removed
-         */
-        off: function (event, listener, callback) {
-            if (!handlers[event]) return;
-            
-            handlers[event].filter(function (handler, index) {
-                return handler.listener === listener && handler.callback === callback; 
-            });
-        }, 
-        
-        /**
-         * Triggers an event, and calls each callbacks of that event
-         * @param {string} event      the event to trigger  
-         * @param {object} sender     the object that triggers the event
-         * @param {Array}  ...options some options that will be passed as arguments to the callbacks 
-         */
-        trigger: function (event, sender, ...options) { 
-            if (!handlers[event]) return;   // if no listeners on this event ever
-                        
-            handlers[event].forEach(function (handler, index) { 
-                handler.callback.call(handler.listener, sender, ...options);
-            });
-        },
-        
-        /**
-         * Resets the mediator
-         */
-        reset: function () {
-            handlers = {};
-        },
-    }
-}
-
-
 
 
 
@@ -317,7 +258,7 @@ function View(controller, model) {
 
 
 function Controller(model) { 
-    let mediator = new Mediator();
+    let mediator = new EventBus();
     
     function initialize() {
         model.setController(self);
@@ -327,8 +268,8 @@ function Controller(model) {
         self.view.show();
                 
         // add the events
-        mediator.on(Events.INITIALIZE_GRAPH, model, model.onInitializeGraphEvent);
-        mediator.on(Events.GRAPH_UPDATED, self.view, self.view.redrawGraph);
+        mediator.on(Events.INITIALIZE_GRAPH, model.onInitializeGraphEvent, model);
+        mediator.on(Events.GRAPH_UPDATED, self.view.redrawGraph, self.view);
     }
     
     let self = {
@@ -351,3 +292,6 @@ let controller = new Controller(model);
 
 
 let g = model.graph;
+
+
+

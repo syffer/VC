@@ -116,6 +116,9 @@ function Graph() {
 
 
 function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCost = 30) {
+    if (nbNodes < 0) throw "nbNodes must be greater than 0";
+    if (nbNodes === 1 && nbLinksPerNode > 0) nbLinksPerNode = 0;
+    if (minCost > maxCost) throw "minimal cost must be inferior to maximal cost";
     
     function getOtherId(id, nodesId) {
         let otherIndex = -1; 
@@ -129,9 +132,6 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCos
         return otherId;
     }
     
-    if (nbNodes < 0) throw "nbNodes must be greater than 0";
-    if (nbNodes === 1 && nbInputLinksPerNode > 0) nbInputLinksPerNode = 0;
-    if (nbNodes === 1 && nbOutputLinksPerNode > 0) nbOutputLinksPerNode = 0;
     
     let graph = new Graph();
     
@@ -163,13 +163,13 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCos
 
 
 
-function getCycle(graph, startingNode) {
+function getRandomCycle(graph, startingNode) {
         
     function rec(neighborhood, actual, cycle, cycleLength) {        
         let possibilities = neighborhood[actual];
         neighborhood[actual] = undefined;
-        
-        let res = possibilities.some(function (possibility) { 
+                
+        let findCycle = possibilities.some(function (possibility) { 
             
             if (cycleLength === graph.getNbNodes()-1 && possibility === startingNode) {
                 cycle.push(possibility);
@@ -182,20 +182,23 @@ function getCycle(graph, startingNode) {
             return false;
         });
                 
-        if (!res) neighborhood[actual] = possibilities;
-        return res;
+        if (!findCycle) neighborhood[actual] = possibilities;
+        return findCycle;
     }
-    
-    
-    
+        
     let neighborhood = graph.getNeighborhood();
-    let cycle = [];
-    rec(neighborhood, startingNode, cycle, 0);    
     
-    if (cycle.length <= 0) throw "the given graph doesn't possess any hamiltonian cycle";
+    // randomize the arrays (not a good solution)
+    Object.values(neighborhood).forEach(list => list.sort(() => (Math.random()*3) - 1));
+    
+    let cycle = [];
+    let hasCycle = rec(neighborhood, startingNode, cycle, 0);    
+    
+    if (!hasCycle) throw "the given graph doesn't possess any hamiltonian cycle";
     
     return cycle;
 }
+
 
 
 
