@@ -6,10 +6,10 @@ function EventBus() {
 
     /**
      * Adds a callback to be executed when the given event is triggered
-     * @throws {Error} [[Description]]
+     * @throws {Error} if the given callback isn't a function 
      * @param {string}   event              the event to be listened
      * @param {function} callback           the function to be called when the event is triggered
-     * @param {object}   listener=undefined [[Description]]
+     * @param {object}   listener=undefined the object that listens to the event
      * @param {boolean}  once=false         true if the callback is to be called only once
      */
     this.on = function (event, callback, listener=undefined, once=false) { 

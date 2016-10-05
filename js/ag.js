@@ -1,6 +1,11 @@
 "use strict";
 
-
+/*
+- sorting à modifier
+- muter, croiser et fitness pour graph
+- start, pause
+- affichage des résultats (liste + couleurs sur graphe) 
+*/
 
 /**
  * [[Description]]
@@ -28,12 +33,12 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
         population = generatePopulation(nbPopulation);
     }
     
-    this.nextGeneration = function() {
+    this.nextGeneration = function () {
         generation++;
         selection();
         crossing();
         mutation();
-        trigger(AlgoGenetique.Events.NEW_GENERATION, generation, population.slice());
+        trigger(AlgoGenetique.Events.NEW_GENERATION, generation, [...population]);
     }
     
     function selection() {
@@ -44,7 +49,7 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
     function crossing() {
         trigger(AlgoGenetique.Events.CROSSING, generation);
         
-        let remainingIndivs = population.slice();
+        let remainingIndivs = [...population]; // population.slice() 
         
         while (remainingIndivs.length >= 2) {
             let index1 = random(0, remainingIndivs.length - 1);
@@ -56,8 +61,7 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
             trigger(AlgoGenetique.Events.CROSSING_INDIVIDUALS, generation, indiv1, indiv2);
             let [child1, child2] = cross(indiv1, indiv2);
             
-            population.push(child1);
-            population.push(child2);
+            population.push(child1, child2);
         }
         
     }
@@ -82,7 +86,8 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
         mutationLevel = newMutationLevel; 
     }
     
-    this.setSelectAlgorithm = function (newSelect) {
+    this.setSelectAlgorithm = function (newSelect) { 
+        if (typeof newSelect !== "function") throw new Error("a function was expected");
         select = newSelect;
     }
     
@@ -107,28 +112,31 @@ AlgoGenetique.selectBests = function (fitness, list) {
     return list;
 }
 
-AlgoGenetique.selectTournament = function (fitness, list, selectLevel=0.2) { 
+
+AlgoGenetique.selectTournamentWithLevel = function (selectLevel) { 
     if (selectLevel < 0 || selectLevel > 1) throw "'selectLevel' must be between 0 and 1 (included)";
     
-    let choosen = [];
-
-    while (list.length >= 2) {
-        let index1 = random(0, list.length - 1);
-        let best = list.pop(index1);
-
-        let index2 = random(0, list.length - 1);
-        let worse = list.pop(index2);
+    return function (fitness, list) {
+        let choosen = [];
         
-        if (fitness(worse) > fitness(best)) [best, worse] = [worse, best];
-    
-        if (Math.random() < selectLevel) choosen.push(best)
-        else choosen.push(worse); 
-    }
+        while (list.length >= 2) {
+            let index1 = random(0, list.length - 1);
+            let best = list.pop(index1);
 
-    return choosen;
+            let index2 = random(0, list.length - 1);
+            let worse = list.pop(index2);
+
+            if (fitness(worse) > fitness(best)) [best, worse] = [worse, best];
+
+            if (Math.random() < selectLevel) choosen.push(best)
+            else choosen.push(worse); 
+        }
+
+        return choosen;
+    };
 }
 
-
+AlgoGenetique.selectTournament = AlgoGenetique.selectTournamentWithLevel(0.9);
 
 
 AlgoGenetique.Events = {
@@ -145,6 +153,17 @@ AlgoGenetique.Events = {
 
 
 /* ------------------- mini test ------------------- */
+
+
+
+
+function Test() {
+    
+}
+
+Test.prototype = new AlgoGenetique();
+Test.prototype.constructor = Test;
+
 
 
 function generer(nbPop) {
@@ -179,3 +198,29 @@ al.on(AlgoGenetique.Events.MUTATION_OCCURED, (sender, ite) => console.log("- " +
 
 al.getPopulation();
 al.nextGeneration();
+
+
+/* ------------------- mini test graph ------------------- */
+
+function genererCycles(graph, nbCycles) { 
+    let idNodes = Object.keys(graph.nodes);
+    
+    function getRandomNode() {
+        let randomIndex = random(0, graph.getNbNodes() - 1);
+        let id = idNodes[randomIndex]; 
+        return graph.nodes[id];
+    }
+    
+    return Array.apply(undefined, Array(nbCycles)).map(() => getRandomCycle(graph, getRandomNode()));    
+}
+
+
+function distance(graph, cycle) {
+    return cycle.reduce(function (acc, node, index) { 
+        let nextNode = cycle[(index + 1) % cycle.length];
+        let link = graph.getLink(node, nextNode);
+        return acc + link.cost;
+    }, 0);
+}
+
+

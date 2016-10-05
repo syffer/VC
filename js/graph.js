@@ -40,7 +40,7 @@ function Graph() {
         return self.getNode(idOrNode);
     }
     
-    let self = { 
+    let self = {         
         nodes: nodes, 
         links: links, 
         
@@ -83,8 +83,8 @@ function Graph() {
             if (source.id > target.id) [source, target] = [target, source];
             
             let link = links.find(link => link.source == source && link.target == target);
-            if (link === undefined) throw new Error("no links between the two given nodes : " + source.id + " > " + target.id);
             
+            if (link === undefined) throw new Error("no links between the two given nodes : " + source.id + " > " + target.id); 
             return link;
         },
         
@@ -136,9 +136,7 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCos
     let graph = new Graph();
     
     // creates the nodes
-    Array.apply(null, Array(nbNodes)).forEach(function (elem, index, table) {
-        graph.addNode(index);
-    });
+    Array.apply(null, Array(nbNodes)).forEach((elem, index) => graph.addNode(index));
     
     // creates the links 
     Object.keys(graph.nodes).forEach(function (id, index, nodesId) { 
@@ -163,12 +161,26 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCos
 
 
 
-function getRandomCycle(graph, startingNode) {
+function Cycle(graph, nodes) {
         
+    this.nodes = nodes;
+    
+    this.distance = function () {
+        return nodes.reduce(function (acc, node, index) { 
+            let nextNode = nodes[(index + 1) % nodes.length];
+            let link = graph.getLink(node, nextNode);
+            return acc + link.cost;
+        }, 0);
+    }
+}
+
+
+function getRandomCycle(graph, startingNode) { 
+    
     function rec(neighborhood, actual, cycle, cycleLength) {        
         let possibilities = neighborhood[actual];
         neighborhood[actual] = undefined;
-                
+        
         let findCycle = possibilities.some(function (possibility) { 
             
             if (cycleLength === graph.getNbNodes()-1 && possibility === startingNode) {
@@ -185,16 +197,18 @@ function getRandomCycle(graph, startingNode) {
         if (!findCycle) neighborhood[actual] = possibilities;
         return findCycle;
     }
-        
+    
+    if (startingNode instanceof Node) startingNode = startingNode.id; 
+    
     let neighborhood = graph.getNeighborhood();
     
-    // randomize the arrays (not a good solution)
+    // "randomize" the arrays (not a good solution)
     Object.values(neighborhood).forEach(list => list.sort(() => (Math.random()*3) - 1));
     
     let cycle = [];
     let hasCycle = rec(neighborhood, startingNode, cycle, 0);    
     
-    if (!hasCycle) throw new Error("the given graph doesn't possess any hamiltonian cycle");
+    if (!hasCycle) throw new Error("the given graph doesn't possess any hamiltonian cycle (starting node : " + startingNode + ")");
     
     return cycle;
 }
