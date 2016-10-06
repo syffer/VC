@@ -44,12 +44,12 @@ function AlgoGenetique(nbPopulation, select=AlgoGenetique.selectBests, mutationL
         trigger(AlgoGenetique.Events.NEW_GENERATION, generation, population.slice());
     }
     
-    function selection(fitness) {
+    function selection() {
         trigger(AlgoGenetique.Events.SELECTION, generation);
         population = select(this.fitness, population);
     }
     
-    function crossing(cross) {
+    function crossing() {
         trigger(AlgoGenetique.Events.CROSSING, generation);
         
         let remainingIndivs = population.slice();   //[...population]; // 
