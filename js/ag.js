@@ -30,12 +30,19 @@ function AlgoGenetique(nbPopulation, select=AlgoGenetique.selectBests, mutationL
     this.mutate = function (individual) {};
     */
     
+    /**
+     * Generates the initial population. 
+     * Triggers the event "GENERATE_INITIAL_POPULATION" before generating it.
+     */
     this.generateInitialPopulation = function () {
         trigger(AlgoGenetique.Events.GENERATE_INITIAL_POPULATION);
         generation = 0;
         population = this.generatePopulation(nbPopulation);        
     }
     
+    /**
+     * Generates the next generation of the population by selecting, crossing and mutating the individuals.
+     */
     this.nextGeneration = function () {
         generation++;
         selection.call(this);
@@ -69,6 +76,9 @@ function AlgoGenetique(nbPopulation, select=AlgoGenetique.selectBests, mutationL
         
     }
     
+    /**
+     * Mutation step. Each individual of the population can mutate independantly of the other.  
+     */
     function mutation() { 
         trigger(AlgoGenetique.Events.MUTATION, generation); 
         population.map(individual => (Math.random() < mutationLevel) ? mutateIndividual.call(this, individual) : individual);
@@ -79,27 +89,51 @@ function AlgoGenetique(nbPopulation, select=AlgoGenetique.selectBests, mutationL
         return this.mutate(individual);
     }
     
+    /**
+     * Triggers the given event with some options
+     * @param {string} event      the event to trigger
+     * @param {object} ...options arguments variadiques restant
+     */
     function trigger(event, ...options) {
         eventBus.trigger(event, this, ...options);
     }
     
     
+    /**
+     * Sets the mutation level of each individuals. 
+     * Must be between 0 and 1 (included)
+     * @throws {Error} if the level isn't in the given range
+     * @param {number} newMutationLevel the new mutation level
+     */
     this.setMutationLevel = function (newMutationLevel) {
         if (newMutationLevel < 0 || newMutationLevel > 1) throw new Error("Mutation level must be between 0 and 1 (included)");
         mutationLevel = newMutationLevel; 
     }
     
+    /**
+     * Sets the selection algorithm to be use during the selection. 
+     * @throws {Error} if the select algorithm isn't a function
+     * @param {function(fitess, list)} newSelect the select algorithm that returns the selected population in a new list.
+     */
     this.setSelectAlgorithm = function (newSelect) { 
         if (typeof newSelect !== "function") throw new Error("A function was expected");
         select = newSelect;
     }
-    
-    this.reset = function () {
-        generateInitialPopulation(nbPopulation);
-    }
-    
+        
+    /**
+     * Returns the population (not a copy). 
+     * @returns {array} the population
+     */
     this.getPopulation = function () {
         return population;
+    }
+    
+    /**
+     * Returns the generation number. 
+     * @returns {number} the generation number.
+     */
+    this.getGenerationNumber = function () {
+        return generation;
     }
     
     this.on = eventBus.on;
