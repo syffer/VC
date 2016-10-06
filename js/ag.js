@@ -9,47 +9,50 @@
 
 /**
  * [[Description]]
- * @param   {function} generatePopulation               [[Description]]
- * @param   {function} fitness                          [[Description]]
- * @param   {function} cross                            [[Description]]
- * @param   {function} mutate                           [[Description]]
- * @param   {number}   nbPopulation                     [[Description]]
- * @param   {function} select=AlgoGenetique.selectBests [[Description]]
- * @param   {number}   mutationLevel=0.2                [[Description]]
- * @returns {[[Type]]} [[Description]]
+ * @throws {Error} [[Description]]
+ * @param {number}   nbPopulation                     [[Description]]
+ * @param {function} select=AlgoGenetique.selectBests [[Description]]
+ * @param {number}   mutationLevel=0.2                [[Description]]
  */
-function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation, select=AlgoGenetique.selectBests, mutationLevel=0.2) { 
-    if (mutationLevel < 0 || mutationLevel > 1) throw new Error("mutation level must be between 0 and 1 (included)");
+function AlgoGenetique(nbPopulation, select=AlgoGenetique.selectBests, mutationLevel=0.2) { 
+    if (this.constructor === AlgoGenetique) throw new Error("Can't instantiate abstract class");
+    if (mutationLevel < 0 || mutationLevel > 1) throw new Error("Mutation level must be between 0 and 1 (included)");
     
     let eventBus = new EventBus();
     
     let generation = 0;
-    let population = [];
-    generateInitialPopulation(nbPopulation);
+    let population = []; 
     
-    function generateInitialPopulation(nbPopulation) {
+    /*
+    this.generatePopulation = function (nbPopulation) { throw new Error("Abstract method"); };
+    this.fitness = function (individual) {};
+    this.cross = function (indiv1, indiv2) {};
+    this.mutate = function (individual) {};
+    */
+    
+    this.generateInitialPopulation = function () {
         trigger(AlgoGenetique.Events.GENERATE_INITIAL_POPULATION);
         generation = 0;
-        population = generatePopulation(nbPopulation);
+        population = this.generatePopulation(nbPopulation);        
     }
     
     this.nextGeneration = function () {
         generation++;
-        selection();
-        crossing();
-        mutation();
-        trigger(AlgoGenetique.Events.NEW_GENERATION, generation, [...population]);
+        selection.call(this);
+        crossing.call(this);
+        mutation.call(this);
+        trigger(AlgoGenetique.Events.NEW_GENERATION, generation, population.slice());
     }
     
-    function selection() {
+    function selection(fitness) {
         trigger(AlgoGenetique.Events.SELECTION, generation);
-        population = select(fitness, population);
+        population = select(this.fitness, population);
     }
     
-    function crossing() {
+    function crossing(cross) {
         trigger(AlgoGenetique.Events.CROSSING, generation);
         
-        let remainingIndivs = [...population]; // population.slice() 
+        let remainingIndivs = population.slice();   //[...population]; // 
         
         while (remainingIndivs.length >= 2) {
             let index1 = random(0, remainingIndivs.length - 1);
@@ -59,7 +62,7 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
             let indiv2 = remainingIndivs.pop(index2);
             
             trigger(AlgoGenetique.Events.CROSSING_INDIVIDUALS, generation, indiv1, indiv2);
-            let [child1, child2] = cross(indiv1, indiv2);
+            let [child1, child2] = this.cross(indiv1, indiv2);
             
             population.push(child1, child2);
         }
@@ -68,12 +71,12 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
     
     function mutation() { 
         trigger(AlgoGenetique.Events.MUTATION, generation); 
-        population.map(individual => (Math.random() < mutationLevel) ? mutateIndividual(individual) : individual);
+        population.map(individual => (Math.random() < mutationLevel) ? mutateIndividual.call(this, individual) : individual);
     }
     
     function mutateIndividual(individual) {
         trigger(AlgoGenetique.Events.MUTATION_OCCURED, generation, individual);
-        return mutate(individual);
+        return this.mutate(individual);
     }
     
     function trigger(event, ...options) {
@@ -82,12 +85,12 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
     
     
     this.setMutationLevel = function (newMutationLevel) {
-        if (newMutationLevel < 0 || newMutationLevel > 1) throw new Error("mutation level must be between 0 and 1 (included)");
+        if (newMutationLevel < 0 || newMutationLevel > 1) throw new Error("Mutation level must be between 0 and 1 (included)");
         mutationLevel = newMutationLevel; 
     }
     
     this.setSelectAlgorithm = function (newSelect) { 
-        if (typeof newSelect !== "function") throw new Error("a function was expected");
+        if (typeof newSelect !== "function") throw new Error("A function was expected");
         select = newSelect;
     }
     
@@ -103,6 +106,8 @@ function AlgoGenetique(generatePopulation, fitness, cross, mutate, nbPopulation,
     this.once = eventBus.once;
     this.off = eventBus.off;
     
+    //generateInitialPopulation.call(this, nbPopulation);
+    //this.generateInitialPopulation(nbPopulation);
 }
 
 
@@ -157,38 +162,38 @@ AlgoGenetique.Events = {
 
 
 
-function Test() {
+function TestEntier() {
+    AlgoGenetique.apply(this, arguments);
     
+    this.generatePopulation = function (nbPop) {
+        let list = [];
+        for(let i = 0; i < nbPop; i++) {
+            list.push(random(0, 10));
+        }
+        return list;
+    } 
+    
+    this.fitness = function (indiv) {
+        return indiv;
+    } 
+    
+    this.cross = function (indiv1, indiv2) {
+        return [indiv1+indiv2, indiv1-indiv2];
+    } 
+    
+    this.mutate = function (indiv) {
+        return indiv + random(-indiv, indiv);
+    } 
 }
 
-Test.prototype = new AlgoGenetique();
-Test.prototype.constructor = Test;
+TestEntier.prototype = Object.create(AlgoGenetique); //new AlgoGenetique();
+TestEntier.prototype.constructor = TestEntier;
 
 
 
-function generer(nbPop) {
-    let list = [];
-    for(let i = 0; i < nbPop; i++) {
-        list.push(random(0, 10));
-    }
-    return list;
-}
+let al = new TestEntier(30);
 
-function croiser(indiv1, indiv2) {
-    return [indiv1+indiv2, indiv1-indiv2];
-}
-
-function muter(indiv) {
-    return indiv + random(-indiv, indiv);
-}
-
-function h(indiv) {
-    return indiv;
-}
-
-
-let al = new AlgoGenetique(generer, h, croiser, muter, 30);
-
+al.on(AlgoGenetique.Events.GENERATE_INITIAL_POPULATION, () => console.log("initial population created !"));
 al.on(AlgoGenetique.Events.NEW_GENERATION, (sender, ite, pop) => console.log(ite + " : " + pop));
 al.on(AlgoGenetique.Events.SELECTION, (sender, ite) => console.log("- " + ite + " selection"));
 al.on(AlgoGenetique.Events.CROSSING, (sender, ite) => console.log("- " + ite + " crossing"));
@@ -196,23 +201,47 @@ al.on(AlgoGenetique.Events.CROSSING_INDIVIDUALS, (sender, ite, i1, i2) => consol
 al.on(AlgoGenetique.Events.MUTATION, (sender, ite) => console.log("- " + ite + " mutate"));
 al.on(AlgoGenetique.Events.MUTATION_OCCURED, (sender, ite) => console.log("- " + ite + " mutate"));
 
-al.getPopulation();
+al.generateInitialPopulation();
 al.nextGeneration();
+
 
 
 /* ------------------- mini test graph ------------------- */
 
-function genererCycles(graph, nbCycles) { 
-    let idNodes = Object.keys(graph.nodes);
+
+function AlgoGenetiqueGraph(graph, nbPopulation) {
+    AlgoGenetique.call(this, nbPopulation);
     
-    function getRandomNode() {
-        let randomIndex = random(0, graph.getNbNodes() - 1);
-        let id = idNodes[randomIndex]; 
-        return graph.nodes[id];
+    this.generatePopulation = function (nbCycles) {
+        let idNodes = Object.keys(graph.nodes);
+    
+        function getRandomNode() {
+            let randomIndex = random(0, graph.getNbNodes() - 1);
+            let id = idNodes[randomIndex]; 
+            return graph.nodes[id];
+        }
+
+        return Array.apply(undefined, Array(nbCycles)).map(() => getRandomCycle(graph, getRandomNode()));  
     }
     
-    return Array.apply(undefined, Array(nbCycles)).map(() => getRandomCycle(graph, getRandomNode()));    
+    
+    this.fitness = function (cycle) {
+        
+    }
+    
+    this.cross = function (cycle1, cycle2) {
+        
+    }
+    
+    this.mutate = function (cycle) {
+        
+    }
 }
+
+
+
+AlgoGenetiqueGraph.prototype = Object.create(AlgoGenetique);
+AlgoGenetiqueGraph.prototype.constructor = AlgoGenetiqueGraph;
 
 
 function distance(graph, cycle) {
@@ -224,3 +253,5 @@ function distance(graph, cycle) {
 }
 
 
+let alg = new AlgoGenetiqueGraph(undefined, 30);
+alg.generateInitialPopulation();
