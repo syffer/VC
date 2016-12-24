@@ -1,13 +1,32 @@
+
+/*
+.slider-selection {
+	background: #BABABA;
+}
+*/
+
+
 /* side bar */
 #sidebar {
     position: fixed;
     float: left;
+    margin-left: 10px;
+    margin-top: 10px;
 }
 
 #sidebar * {
-    display: block;
-    margin: auto;
+    text-align: right;
 }
+
+#sidebar b {
+    margin-right: 10px;
+}
+
+#sidebar button {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
 
 /* graph */
 svg {

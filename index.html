@@ -12,15 +12,31 @@
     <body>
         
         <div id="sidebar">
-            <p>
+            <div>
                 <b>nodes</b> <input id="sliderNbNodes" type="text" data-slider-min="2" data-slider-max="30" data-slider-step="1" data-slider-value="10"/>
-            </p>
+            </div>
             
-            <p>
+            <div>
                 <b>links</b> <input id="sliderNbLinks" type="text" data-slider-min="3" data-slider-max="10" data-slider-step="1" data-slider-value="3"/>
-            </p>
+            </div>
             
-            <button type="button" id="buttonNewGraph" class="btn btn-default">New Graph</button>
+            <div>
+                <button type="button" id="buttonNewGraph" class="btn btn-default">New Graph</button>
+            </div>
+            
+            <div>
+                <b>population</b> <input id="sliderNbPopulation" type="text" data-slider-min="20" data-slider-max="100" data-slider-step="1" data-slider-value="20"/>
+            </div>
+            
+            <div>
+                <b>mutation level</b> <input id="sliderMutationLevel" type="text" data-slider-min="0" data-slider-max="1" data-slider-step="0.1" data-slider-value="0.2"/>
+            </div>
+            
+            <div class="">
+                <button type="button" id="buttonReset" class="btn btn-default">Reset</button>
+                <button type="button" id="buttonStart" class="btn btn-default">Start</button>
+                <button type="button" id="buttonPause" class="btn btn-default">Pause</button>
+            </div>
         </div>
         
         

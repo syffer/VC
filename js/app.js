@@ -19,7 +19,7 @@ function Model() {
     
     self = {
         graph: createRandomGraph(), 
-        
+                
         getGraphNodes: function () {
             return d3.values(this.graph.nodes);
         }, 
@@ -37,7 +37,7 @@ function Model() {
             controller = newController;
         },
     };
-    
+        
     return self;
 }
 
@@ -61,6 +61,7 @@ function View(controller, model) {
     let buttonNewGraph;
     let sliderNbNodes;
     let sliderNbLinks;
+    let sliderNbPopulation;
     
     /**
      * Initializes the view by 
@@ -80,8 +81,10 @@ function View(controller, model) {
         buttonNewGraph.onclick = onNewGraphButtonEvent;
         
         // creates the sliders 
-        sliderNbNodes = new Slider("#sliderNbNodes", {}); 
+        sliderNbNodes = new Slider("#sliderNbNodes", {tooltip_position:'bottom'}); 
         sliderNbLinks = new Slider("#sliderNbLinks", {});
+        sliderNbPopulation = new Slider("#sliderNbPopulation", {});
+        sliderMutationLevel = new Slider("#sliderMutationLevel", {});
     }
     
     /**

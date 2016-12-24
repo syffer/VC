@@ -162,12 +162,13 @@ function createRandomGraph(nbNodes = 10, nbLinksPerNode = 3, minCost = 1, maxCos
 
 
 function Cycle(graph, nodes) {
-        
+    let self = this; 
+    
     this.nodes = nodes;
     
     this.distance = function () {
-        return nodes.reduce(function (acc, node, index) { 
-            let nextNode = nodes[(index + 1) % nodes.length];
+        return self.nodes.reduce(function (acc, node, index) { 
+            let nextNode = self.nodes[(index + 1) % self.nodes.length];
             let link = graph.getLink(node, nextNode);
             return acc + link.cost;
         }, 0);
